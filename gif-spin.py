@@ -13,12 +13,12 @@ if not options.infile:
     parser.error("Input file not provided")
     exit(1)
 if not options.spinfile:
-    parser.error("Output file not specified")
+    parser.error("Output file not provided")
     exit(1)
 
 # open image file and convert to keep the quality of the original file
-img = Image.open((options.infile), 'r')
-img = img.convert("P",palette=Image.ADAPTIVE)
+img = Image.open((options.infile), 'r').convert("P",palette=Image.ADAPTIVE, colors=256)
+#img = img.convert("P",palette=Image.ADAPTIVE)
 
 # build the animated gif
 images = []
