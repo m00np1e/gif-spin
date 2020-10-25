@@ -8,7 +8,7 @@ parser.add_option("-i", "--infile", dest="infile", type="string")
 parser.add_option("-o", "--spinfile", dest="spinfile", type="string")
 (options, args) = parser.parse_args()
 
-#simple error checking
+# simple error checking
 if not options.infile:
     parser.error("Input file not provided")
     exit(1)
@@ -17,8 +17,7 @@ if not options.spinfile:
     exit(1)
 
 # open image file and convert to keep the quality of the original file
-img = Image.open((options.infile), 'r').convert("P",palette=Image.ADAPTIVE, colors=256)
-#img = img.convert("P",palette=Image.ADAPTIVE)
+img = Image.open((options.infile), 'r').convert("P", palette=Image.ADAPTIVE, colors=256)
 
 # build the animated gif
 images = []
