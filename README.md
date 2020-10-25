@@ -1,2 +1,2 @@
 # gif-spin
-Make spinning GIF
+Make a spinning GIF
