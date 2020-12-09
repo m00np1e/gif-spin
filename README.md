@@ -23,5 +23,3 @@ Requires: https://github.com/python-pillow/Pillow
 Same as above but gives you the option of a red, yellow, or orange annoying strobe effect.
 
 Just add an -f argument and the color of your choice: red, yellow, orange.
-
-If you try and use a color other than those 3, it defaults to orange.
