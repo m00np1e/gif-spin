@@ -4,7 +4,6 @@ from PIL import Image, ImageOps
 from optparse import OptionParser
 from sys import exit
 
-
 # python 3 script to convert an image to a 512x512 spinning gif
 # with an annoying color (red, yellow, or orange) strobe
 # suitable for using as custom emojis in slack
@@ -29,6 +28,18 @@ def resize_image(r_image):
         return r2_image
     else:
         return r_image
+
+
+# gif spin
+def logo():
+    print("""\
+   ________________   _____       _          _____ __             __       
+  / ____/  _/ ____/  / ___/____  (_)___     / ___// /__________  / /_  ___ 
+ / / __ / // /_      \__ \/ __ \/ / __ \    \__ \/ __/ ___/ __ \/ __ \/ _ \\
+/ /_/ // // __/     ___/ / /_/ / / / / /   ___/ / /_/ /  / /_/ / /_/ /  __/
+\____/___/_/       /____/ .___/_/_/ /_/   /____/\__/_/   \____/_.___/\___/ 
+                       /_/                                                 
+           """)
 
 
 # rotate the image clockwise and apply the strobe color
@@ -85,6 +96,7 @@ def counterclockwise(cc_image, color):
 def open_file(option):
     try:
         image_open = Image.open(option, 'r').convert("P", palette=Image.ADAPTIVE, colors=256)
+        logo()
         print("Opened", option, "for spinning.")
         return image_open
     except IOError:
@@ -95,18 +107,23 @@ def open_file(option):
 # simple error checking
 def error_check(infile, spinfile, speed, direction, flash):
     if not infile:
+        logo()
         print("Input file not provided: -i")
         exit(1)
     if not spinfile:
+        logo()
         print("Output file not provided: -o")
         exit(1)
     if not speed:
+        logo()
         print("Give me some speed: -s")
         exit(1)
     if not direction:
+        logo()
         print("Give me a direction (cc or c): -d")
         exit(1)
     if not flash:
+        logo()
         print("Flash color? red, yellow, or orange: -f")
         exit(1)
 

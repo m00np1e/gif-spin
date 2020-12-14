@@ -59,6 +59,7 @@ def counterclockwise(cc_image):
 def open_file(option):
     try:
         image_open = Image.open(option, 'r').convert("P", palette=Image.ADAPTIVE, colors=256)
+        logo()
         print("Opened", option, "for spinning.")
         return image_open
     except IOError:
@@ -66,18 +67,33 @@ def open_file(option):
     exit(1)
 
 
+# gif spin
+def logo():
+    print("""\
+                   ________________   _____            
+                  / ____/  _/ ____/  / ___/____  (_)___ 
+                 / / __ / // /_      \__ \/ __ \/ / __ \\
+                / /_/ // // __/     ___/ / /_/ / / / / /
+                \____/___/_/       /____/ .___/_/_/ /_/ 
+                                       /_/              """)
+
+
 # simple error checking
 def error_check(infile, spinfile, speed, direction):
     if not infile:
+        logo()
         print("Input file not provided: -i")
         exit(1)
     if not spinfile:
+        logo()
         print("Output file not provided: -o")
         exit(1)
     if not speed:
+        logo()
         print("Give me some speed: -s")
         exit(1)
     if not direction:
+        logo()
         print("Give me a direction (cc or c): -d")
         exit(1)
 
