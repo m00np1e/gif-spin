@@ -23,6 +23,8 @@ usage = '''
 def resize_image(r_image):
     img_height = 512
     img_width = 512
+    if (r_image.height <= 512) or (r_image.width <= 512):
+        return r_image
     if (r_image.width != img_width) & (r_image.height != img_height):
         r2_image = ImageOps.fit(r_image, [512, 512], Image.ANTIALIAS)
         return r2_image
@@ -95,10 +97,17 @@ def counterclockwise(cc_image, color):
 # open image file and convert, keeping the quality of the original file
 def open_file(option):
     try:
-        image_open = Image.open(option, 'r').convert("P", palette=Image.ADAPTIVE, colors=256)
         logo()
+        image_open = Image.open(option, 'r')
         print("Opened", option, "for spinning.")
-        return image_open
+        if (image_open.height < 512) or (image_open.width < 512):
+            print("WARNING: Image smaller than 512x512. The spin may look weird.")
+        if image_open.format == "PNG":
+            print("PNG files are weird. Use another format until a new version is released.")
+            exit(1)
+        else:
+            image_open = image_open.convert("P", palette=Image.ADAPTIVE, colors=256)
+            return image_open
     except IOError:
         print("Error: Cannot open input file for reading or input file not found.")
     exit(1)

@@ -12,16 +12,21 @@ from sys import exit
 usage = '''
         Takes an image and resizes to 512x512 (maintaining aspect ratio and quality),
         rotates clockwise or counterclockwise, applies speed, and saves as an
-        animated GIF.
+        animated GIF. If image is smaller than 512x512, it will not resize but
+        will spin as-is.
         
         EXAMPLE: gif-spin.py -i test.jpg -o test.gif -d c -s 100'''
 
 
 # resize image to 512x512, maintaining aspect ratio and quality
-# anything smaller than this and there is quality loss
+# resize to anything smaller than this and there is quality loss
+# if the image is smaller than 512x512, it will not resize
+# but will spin (may look weird)
 def resize_image(r_image):
     img_height = 512
     img_width = 512
+    if (r_image.height <= 512) or (r_image.width <= 512):
+        return r_image
     if (r_image.width != img_width) & (r_image.height != img_height):
         r2_image = ImageOps.fit(r_image, [512, 512], Image.ANTIALIAS)
         return r2_image
@@ -55,13 +60,21 @@ def counterclockwise(cc_image):
     return images
 
 
-# open image file and convert, keeping the quality of the original file
+# open image file and convert
+# png files are weird
 def open_file(option):
     try:
-        image_open = Image.open(option, 'r').convert("P", palette=Image.ADAPTIVE, colors=256)
         logo()
+        image_open = Image.open(option, 'r')
         print("Opened", option, "for spinning.")
-        return image_open
+        if (image_open.height < 512) or (image_open.width < 512):
+            print("WARNING: Image smaller than 512x512. The spin may look weird.")
+        if image_open.format == "PNG":
+            print("PNG files are weird. Use another format until a new version is released.")
+            exit(1)
+        else:
+            image_open = image_open.convert("P", palette=Image.ADAPTIVE, colors=256)
+            return image_open
     except IOError:
         print("Error: Cannot open input file for reading or input file not found.")
     exit(1)
@@ -70,12 +83,12 @@ def open_file(option):
 # gif spin
 def logo():
     print("""\
-                   ________________   _____            
-                  / ____/  _/ ____/  / ___/____  (_)___ 
-                 / / __ / // /_      \__ \/ __ \/ / __ \\
-                / /_/ // // __/     ___/ / /_/ / / / / /
-                \____/___/_/       /____/ .___/_/_/ /_/ 
-                                       /_/              """)
+    ________________   _____            
+   / ____/  _/ ____/  / ___/____  (_)___ 
+  / / __ / // /_      \__ \/ __ \/ / __ \\
+ / /_/ // // __/     ___/ / /_/ / / / / /
+ \____/___/_/       /____/ .___/_/_/ /_/ 
+                        /_/              """)
 
 
 # simple error checking
