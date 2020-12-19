@@ -3,6 +3,10 @@ Python 3 script to create a spinning GIF for Slack (or whatever else).
 
 Takes an image (file) as input, converts the image to a 512x512 thumbnail, applies speed and rotation, and saves the spinning GIF as output (file).
 
+PNG files are not supported at this time.
+
+If the image is smaller than 512x512, it will spin but may look weird.
+
 USAGE:
 
 gif-spin.py -i [input file] -o [output file] -s [speed] -d [direction]
@@ -23,3 +27,8 @@ Requires: https://github.com/python-pillow/Pillow
 Same as above but gives you the option of a red, yellow, or orange annoying strobe effect.
 
 Just add an -f argument and the color of your choice: red, yellow, orange.
+
+# gif-flip
+Flips the image instead of rotating.
+
+Only takes -i, -o, and -s arguments.
