@@ -1,77 +1,41 @@
 #!/usr/bin/env python3
 
-from PIL import Image, ImageOps
-from optparse import OptionParser
-from sys import exit
-
-# python 3 script to convert an image to a 512x512 spinning gif
-# suitable for using as custom emojis in slack
+# python 3 script to convert an image to a 120x120
+# clockwise spinning gif
+# suitable for use with custom emotes in slack
 # Ken Mininger, kmininger@us.ibm.com
-# October 2020
+# October 2021
 
-usage = '''
-        Takes an image and resizes to 512x512 (maintaining aspect ratio and quality),
-        rotates clockwise or counterclockwise, applies speed, and saves as an
-        animated GIF. If image is smaller than 512x512, it will not resize but
-        will spin as-is.
-        
-        EXAMPLE: gif-spin.py -i test.jpg -o test.gif -d c -s 100'''
+from PIL import Image, ImageOps
+from sys import exit
+import argparse
 
 
-# resize image to 512x512, maintaining aspect ratio and quality
-# resize to anything smaller than this and there is quality loss
-# if the image is smaller than 512x512, it will not resize
-# but will spin (may look weird)
-def resize_image(r_image):
-    img_height = 512
-    img_width = 512
-    if (r_image.height <= 512) or (r_image.width <= 512):
-        return r_image
-    if (r_image.width != img_width) & (r_image.height != img_height):
-        r2_image = ImageOps.fit(r_image, [512, 512], Image.ANTIALIAS)
-        return r2_image
-    else:
-        return r_image
+def check_args():
+    parser = argparse.ArgumentParser(
+        description="Creates a clockwise spinning GIF.", prog="GIF-Manip",
+        usage="%(prog)s "
+              "[options]")
+    parser.add_argument("-i", help="Input file - The file you want to spin.",
+                        required=True)
+    parser.add_argument("-o", help="Output file - Must specify .gif extension. If not, I'll add it for you.", required=True)
+    parser.add_argument("-s", help="Spin speed (50 is a good clean spin, 20 is turbo spin).", type=int, required=True)
+    args1 = parser.parse_args()
+    return (args1)
 
 
-# rotate the image clockwise
-def clockwise(c_image):
-    images = []
-    images.append(c_image)
-    trans_img1 = c_image.rotate(-90)
-    images.append(trans_img1)
-    trans_img2 = c_image.rotate(-180)
-    images.append(trans_img2)
-    trans_img3 = c_image.rotate(-270)
-    images.append(trans_img3)
-    return images
-
-
-# rotate the image counterclockwise
-def counterclockwise(cc_image):
-    images = []
-    images.append(cc_image)
-    trans_img1 = cc_image.rotate(90)
-    images.append(trans_img1)
-    trans_img2 = cc_image.rotate(180)
-    images.append(trans_img2)
-    trans_img3 = cc_image.rotate(270)
-    images.append(trans_img3)
-    return images
-
-
-# open image file and convert
-# png files are weird
+# open image file
 def open_file(option):
     try:
-        logo()
+        doing = "spinning."
         image_open = Image.open(option, 'r')
-        print("Opened", option, "for spinning.")
-        if (image_open.height < 512) or (image_open.width < 512):
-            print("WARNING: Image smaller than 512x512. The spin may look weird.")
+        print("Opened", option, "for", doing)
+        if (image_open.height < 80) or (image_open.width < 80):
+            print("WARNING: Image smaller than 80x80. The", (doing[:-1]), "may look weird.")
         if image_open.format == "PNG":
-            print("PNG files are weird. Use another format until a new version is released.")
-            exit(1)
+            bg_color = (0, 0, 0)
+            rgb_img = rem_trans(image_open, bg_color)
+            return (rgb_img)
         else:
             image_open = image_open.convert("P", palette=Image.ADAPTIVE, colors=256)
             return image_open
@@ -80,40 +44,47 @@ def open_file(option):
     exit(1)
 
 
-# gif spin
-def logo():
-    print("""\
-    ________________   _____            
-   / ____/  _/ ____/  / ___/____  (_)___ 
-  / / __ / // /_      \__ \/ __ \/ / __ \\
- / /_/ // // __/     ___/ / /_/ / / / / /
- \____/___/_/       /____/ .___/_/_/ /_/ 
-                        /_/              """)
+# convert png to rgba image
+def rem_trans(img, color_bg):
+    if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):
+        alpha = img.convert('RGBA').split()[-1]
+        bg = Image.new("RGBA", img.size, color_bg + (255,))
+        bg.paste(img, mask=alpha)
+        return bg
+    else:
+        return img
 
 
-# simple error checking
-def error_check(infile, spinfile, speed, direction):
-    if not infile:
-        logo()
-        print("Input file not provided: -i")
-        exit(1)
-    if not spinfile:
-        logo()
-        print("Output file not provided: -o")
-        exit(1)
-    if not speed:
-        logo()
-        print("Give me some speed: -s")
-        exit(1)
-    if not direction:
-        logo()
-        print("Give me a direction (cc or c): -d")
-        exit(1)
+# resize image
+def resize_image(r_image):
+    img_height = 120
+    img_width = 120
+    reduce_percent = .4
+    if (r_image.height <= img_height) or (r_image.width <= img_width):
+        return r_image
+    if (r_image.width != img_width) & (r_image.height != img_height):
+        # r2_image = ImageOps.fit(r_image, [img_width, img_height], Image.ANTIALIAS)
+        new_image_height = int(reduce_percent * r_image.height)
+        new_image_width = int(reduce_percent * r_image.width)
+        r2_image = ImageOps.fit(r_image, [new_image_width, new_image_height], Image.ANTIALIAS)
+        return r2_image
+    else:
+        return r_image
 
 
-# spin clockwise and save the image
+# rotate the image clockwise
+def clockwise(c_image):
+    images = []
+    degrees = -1
+    while degrees >= -360:
+        trans_img = c_image.rotate(degrees)
+        images.append(trans_img)
+        degrees -= 20
+    return images
+
+
 def spin_clockwise(image, infile, speed, spinfile):
-    print("Spinning", infile, "clockwise with speed = ", speed)
+    print("Spinning", infile, "clockwise with speed =", str(speed) + ".")
     resized = resize_image(image)
     clockwised = clockwise(resized)
     try:
@@ -123,57 +94,32 @@ def spin_clockwise(image, infile, speed, spinfile):
                            optimize=True, quality=100)
         print("Spinning GIF created:", spinfile)
     except IOError:
-        print("Error: Cannot open output file for writing")
+        print("Error: Cannot open output file for spinning.")
         exit(1)
 
 
-# spin counterclockwise and save the image
-def spin_counterclockwise(image, infile, speed, spinfile):
-    print("Spinning", infile, "counterclockwise with speed = ", speed)
-    resized = resize_image(image)
-    ccwised = counterclockwise(resized)
-    try:
-        ccwised[0].save(spinfile, 'GIF', save_all=True, append_images=ccwised[1:], duration=speed,
-                        loop=0,
-                        optimize=True, quality=100)
-        print("Spinning GIF created: ", spinfile)
-    except IOError:
-        print("Error: Cannot open output file for writing")
-        exit(1)
+def gif_file(extension):
+    if not extension.endswith('.gif'):
+        filename_new = extension + ".gif"
+        return filename_new
+    else:
+        return extension
 
-
-# options: input file, output file, speed, and direction
-def check_args():
-    parser = OptionParser(usage=usage)
-    parser.add_option("-i", "--infile", dest="infile", help="Picture to spin", type="string")
-    parser.add_option("-o", "--spinfile", dest="spinfile", help="Output file (must include .gif)", type="string")
-    parser.add_option("-s", "--speed", dest="speed", help="The lower the number, the faster the spin (100 makes a good "
-                                                          "clean spin)", type="int")
-    parser.add_option("-d", "--direction", dest="direction", help="Counterclockwise (cc) or clockwise (c)",
-                      type="string")
-    (options, args) = parser.parse_args()
-    return (options, args)
 
 
 # main
 def main():
-    # get the command line arguments
-    (options, args) = check_args()
+    # get args
+    (args) = check_args()
 
-    # ensure all options have been provided
-    error_check(options.infile, options.spinfile, options.speed, options.direction)
+    # check that .gif is appended to the -o argument
+    new_output = gif_file(args.o)
 
-    # open the image file for reading and get the image
-    img = open_file(options.infile)
+    # open the file and get the image
+    img = open_file(args.i)
 
-    # determine direction and build the gif
-    if options.direction == "c":
-        spin_clockwise(img, (options.infile), (options.speed), (options.spinfile))
-    elif options.direction == "cc":
-        spin_counterclockwise(img, (options.infile), (options.speed), (options.spinfile))
-    else:
-        print("You provided a direction, but it wasn't c or cc.")
-        exit(1)
+    # spin it
+    spin_clockwise(img, args.i, args.s, new_output)
 
 
 if __name__ == '__main__':
